@@ -1,0 +1,9 @@
+[package]
+name = "cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+api = { version = "0.1.0", path = "../api" }
+clap = { version = "4.5.27", default-features = false, features = ["color", "derive", "help", "std", "suggestions", "usage"] }
+tokio = { version = "1.43.0", features = ["rt-multi-thread", "macros"] }
