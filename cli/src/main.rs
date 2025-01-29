@@ -6,7 +6,10 @@ enum Command {
     Start {
         #[clap(default_value = "10658", long)]
         port: u16,
-    }
+
+        #[clap(default_value = "sqlite::memory:", long)]
+        database_url: String,
+    },
 }
 
 #[derive(Parser)]
@@ -16,20 +19,18 @@ enum Command {
 #[command(propagate_version = true)]
 pub struct Cli {
     #[command(subcommand)]
-    command: Command
+    command: Command,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
     let cli = Cli::parse();
 
-    let Cli {
-        command
-    } = cli;
+    let Cli { command } = cli;
 
     match &command {
-        Command::Start { port } => {
-            api::start(port.clone()).await
+        Command::Start { port, database_url } => {
+            api::start(port.clone(), database_url.clone()).await
         }
     }
 }
