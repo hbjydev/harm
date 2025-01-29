@@ -1,0 +1,8 @@
+[package]
+name = "harm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dropshot = "0.15.1"
+tokio = { version = "1.43.0", features = ["rt-multi-thread", "macros"] }
