@@ -1,6 +1,6 @@
 use dropshot::{EmptyScanParams, PaginationParams, Query, ResultsPage, TypedBody, WhichPage};
 use dropshot::{endpoint, HttpError, HttpResponseOk, RequestContext};
-use entity::config::{self, Entity as ConfigEntity, ServerConfig};
+use entity::config::{self, Entity as ConfigEntity, GameConfig, ServerConfig};
 use entity::config::Model as ConfigModel;
 use sea_orm::{prelude::*, QueryOrder, QuerySelect};
 use schemars::JsonSchema;
@@ -84,8 +84,14 @@ pub async fn create_server(
 
     let insert = ConfigEntity::insert(config::ActiveModel {
         id: sea_orm::ActiveValue::Set(Uuid::new_v4()),
-        title: sea_orm::ActiveValue::Set(body.title),
-        config: sea_orm::ActiveValue::Set(ServerConfig::default()),
+        title: sea_orm::ActiveValue::Set(body.title.clone()),
+        config: sea_orm::ActiveValue::Set(ServerConfig {
+            game: GameConfig {
+                name: body.title,
+                ..Default::default()
+            },
+            ..Default::default()
+        }),
     })
         .exec_with_returning(db)
         .await
