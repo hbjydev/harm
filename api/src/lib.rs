@@ -8,7 +8,7 @@ mod apis;
 mod context;
 mod db;
 
-pub async fn start(port: u16, database_url: String) -> Result<(), String> {
+pub async fn start(port: u16, database_url: String, reforger_path: String) -> Result<(), String> {
     let config_dropshot = ConfigDropshot {
         bind_address: SocketAddr::from((Ipv4Addr::new(0, 0, 0, 0), port)),
         ..Default::default()
@@ -29,12 +29,13 @@ pub async fn start(port: u16, database_url: String) -> Result<(), String> {
         .await
         .map_err(|error| format!("failed to migrate db: {}", error))?;
 
-    let ctx = ServerCtx { db: db_conn };
+    let ctx = ServerCtx { db: db_conn, reforger_path };
 
     let mut api = ApiDescription::<ServerCtx>::new();
     api.register(apis::server::list_servers).unwrap();
     api.register(apis::server::get_server).unwrap();
     api.register(apis::server::create_server).unwrap();
+    api.register(apis::server::start_server).unwrap();
     api.register(apis::server::add_mod).unwrap();
     api.register(apis::server::list_mods).unwrap();
     api.register(apis::server::delete_mod).unwrap();

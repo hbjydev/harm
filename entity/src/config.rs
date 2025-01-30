@@ -109,7 +109,7 @@ impl Default for GameProperties {
     fn default() -> Self {
         Self {
             server_max_view_distance: 1600,
-            server_min_grass_distance: 0,
+            server_min_grass_distance: 50,
             network_view_distance: 1500,
             disable_third_person: false,
             fast_validation: true,
@@ -136,6 +136,7 @@ pub struct ModConfig {
 #[serde(rename_all = "camelCase")]
 pub struct GameConfig {
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub password: Option<String>,
     pub password_admin: String,
     pub admins: Vec<String>,
@@ -214,7 +215,9 @@ impl Default for OperatingConfig {
 #[serde(rename_all = "camelCase")]
 pub struct ServerConfig {
     pub bind_address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bind_port: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub public_address: Option<String>,
     pub public_port: u16,
     pub a2s: A2SConfig,

@@ -13,6 +13,10 @@ enum Command {
         #[clap(default_value = "sqlite::memory:", long, short = 'd')]
         /// Where HARM's sqlite database should be.
         database_url: String,
+
+        #[clap(long, short = 'r')]
+        /// Where Arma Reforger Server is installed
+        reforger: String,
     },
 
     ExportConfig {
@@ -38,8 +42,8 @@ async fn main() -> Result<(), String> {
     let Cli { command } = cli;
 
     match &command {
-        Command::Start { port, database_url } => {
-            api::start(port.clone(), database_url.clone()).await
+        Command::Start { port, database_url, reforger } => {
+            api::start(port.clone(), database_url.clone(), reforger.clone()).await
         },
 
         Command::ExportConfig { id } => {
