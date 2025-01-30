@@ -17,6 +17,7 @@ pub struct Model {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct A2SConfig {
     pub address: String,
     pub port: u16,
@@ -46,6 +47,7 @@ pub enum RconPermission {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct RconConfig {
     pub address: String,
     pub port: u16,
@@ -89,6 +91,7 @@ pub enum GamePlatform {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct GameProperties {
     pub server_max_view_distance: u16,
     pub server_min_grass_distance: u16,
@@ -122,6 +125,7 @@ impl Default for GameProperties {
 #[derive(
     Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema,
 )]
+#[serde(rename_all = "camelCase")]
 pub struct ModConfig {
     pub mod_id: String,
     pub name: String,
@@ -129,6 +133,7 @@ pub struct ModConfig {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct GameConfig {
     pub name: String,
     pub password: String,
@@ -164,6 +169,7 @@ impl Default for GameConfig {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct JoinQueueConfig {
     pub max_size: i16,
 }
@@ -175,6 +181,7 @@ impl Default for JoinQueueConfig {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct OperatingConfig {
     pub lobby_player_synchronize: bool,
     pub disable_crash_reporter: bool,
@@ -204,6 +211,7 @@ impl Default for OperatingConfig {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct ServerConfig {
     pub bind_address: String,
     pub bind_port: Option<u16>,

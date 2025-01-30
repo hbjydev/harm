@@ -1,6 +1,6 @@
-use dropshot::{EmptyScanParams, PaginationParams, Query, ResultsPage, WhichPage};
+use dropshot::{EmptyScanParams, PaginationParams, Query, ResultsPage, TypedBody, WhichPage};
 use dropshot::{endpoint, HttpError, HttpResponseOk, RequestContext};
-use entity::config::{self, Entity as ConfigEntity};
+use entity::config::{self, Entity as ConfigEntity, ServerConfig};
 use entity::config::Model as ConfigModel;
 use sea_orm::{prelude::*, QueryOrder, QuerySelect};
 use schemars::JsonSchema;
@@ -64,4 +64,32 @@ pub async fn list_servers(
         &EmptyScanParams {},
         |p: &ConfigModel, _| ServerPage::from(p),
     )?))
+}
+
+#[derive(JsonSchema, Serialize, Deserialize)]
+struct CreateServerBody {
+    title: String,
+}
+
+#[endpoint(
+    method = POST,
+    path = "/servers",
+)]
+pub async fn create_server(
+    rqctx: RequestContext<ServerCtx>,
+    rqbody: TypedBody<CreateServerBody>,
+) -> Result<HttpResponseOk<ConfigModel>, HttpError> {
+    let body = rqbody.into_inner();
+    let db = &rqctx.context().db;
+
+    let insert = ConfigEntity::insert(config::ActiveModel {
+        id: sea_orm::ActiveValue::Set(Uuid::new_v4()),
+        title: sea_orm::ActiveValue::Set(body.title),
+        config: sea_orm::ActiveValue::Set(ServerConfig::default()),
+    })
+        .exec_with_returning(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(format!("failed to insert server: {}", error)))?;
+
+    Ok(HttpResponseOk(insert))
 }

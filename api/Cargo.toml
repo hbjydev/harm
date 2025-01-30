@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+directories = "6.0.0"
 dropshot = "0.15.1"
 entity = { version = "0.1.0", path = "../entity" }
 migration = { version = "0.1.0", path = "../migration" }
