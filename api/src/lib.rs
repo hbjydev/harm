@@ -37,6 +37,7 @@ pub async fn start(port: u16, database_url: String) -> Result<(), String> {
     api.register(apis::server::create_server).unwrap();
     api.register(apis::server::add_mod).unwrap();
     api.register(apis::server::list_mods).unwrap();
+    api.register(apis::server::delete_mod).unwrap();
 
     let server = ServerBuilder::new(api, ctx, log)
         .config(config_dropshot)

@@ -238,3 +238,66 @@ pub async fn list_mods(
         "No server with that ID was found.".to_string(),
     ))
 }
+
+#[derive(JsonSchema, Deserialize)]
+struct ModPath {
+    /// The ID of the server to fetch data for.
+    id: Uuid,
+
+    /// The ID of the mod to fetch data for.
+    mod_id: String,
+}
+
+#[endpoint(
+    method = DELETE,
+    path = "/servers/{id}/mods/{mod_id}"
+)]
+pub async fn delete_mod(
+    rqctx: RequestContext<ServerCtx>,
+    path: Path<ModPath>,
+) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
+    let db = &rqctx.context().db;
+    let path = path.into_inner();
+
+    let config = ConfigEntity::find()
+        .filter(Expr::col(config::Column::Id).eq(path.id))
+        .one(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
+
+    if let Some(mut cfg) = config {
+        let existing_ids: Vec<String> = cfg
+            .config
+            .game
+            .mods
+            .iter()
+            .map(|e| e.mod_id.clone())
+            .collect();
+        if !existing_ids.contains(&path.mod_id.clone()) {
+            return Err(HttpError::for_client_error(
+                Some("MOD_NOT_ADDED".to_string()),
+                ClientErrorStatusCode::BAD_REQUEST,
+                "No mod with that ID exists on this server's configuration!".to_string(),
+            ));
+        }
+
+        let idx = cfg.config.game.mods.iter().position(|x| x.mod_id == path.mod_id.clone()).unwrap();
+        cfg.config.game.mods.remove(idx);
+
+        ConfigEntity::update(config::ActiveModel {
+            id: sea_orm::ActiveValue::Unchanged(cfg.id),
+            title: sea_orm::ActiveValue::Unchanged(cfg.title),
+            config: sea_orm::ActiveValue::Set(cfg.config),
+        })
+        .exec(db)
+        .await
+        .map_err(|e| HttpError::for_internal_error(format!("failed to update config: {}", e)))?;
+
+        return Ok(HttpResponseOk(AddModResponse { success: true }));
+    }
+
+    Err(HttpError::for_not_found(
+        Some("NO_SUCH_SERVER".to_string()),
+        "No server with that ID was found.".to_string(),
+    ))
+}
