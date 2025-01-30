@@ -51,7 +51,7 @@ pub async fn list_servers(
 
         WhichPage::Next(ServerPage { id }) => ConfigEntity::find()
             .limit(limit)
-            .filter(config::Column::Id.gt(id.clone()))
+            .filter(config::Column::Id.gt(*id))
             .order_by_asc(config::Column::Id)
             .all(db)
             .await
@@ -184,10 +184,7 @@ pub async fn add_mod(
 
         let mod_block = ModConfig {
             mod_id: mod_body.mod_id,
-            name: match mod_body.name {
-                Some(name) => name,
-                None => String::new(),
-            },
+            name: mod_body.name.unwrap_or_default(),
             required: true,
         };
 
@@ -272,7 +269,7 @@ pub async fn start_server(
         let mut file = fs::File::create(config_path.clone()).unwrap();
         file.write_all(config_str.as_bytes()).unwrap();
 
-        let mut child = tokio::process::Command::new(path.clone())
+        tokio::process::Command::new(path.clone())
             .current_dir(parent_path)
             .arg("-maxFPS")
             .arg("60")

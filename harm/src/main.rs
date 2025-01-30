@@ -46,7 +46,7 @@ async fn main() -> Result<(), String> {
             port,
             database_url,
             reforger,
-        } => api::start(port.clone(), database_url.clone(), reforger.clone()).await,
+        } => api::start(*port, database_url.clone(), reforger.clone()).await,
 
         Command::ExportConfig { id } => {
             let resp = reqwest::get(format!("http://localhost:10658/servers/{}", id))

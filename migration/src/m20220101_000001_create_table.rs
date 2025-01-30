@@ -31,5 +31,6 @@ enum Config {
     Table,
     Id,
     Title,
+    #[allow(clippy::enum_variant_names)]
     Config,
 }
