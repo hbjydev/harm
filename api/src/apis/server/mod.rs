@@ -48,7 +48,7 @@ pub async fn list_servers(
                 .map_err(|error| HttpError::for_internal_error(error.to_string()))
         }
 
-        WhichPage::Next(ServerPage { id, .. }) => {
+        WhichPage::Next(ServerPage { id }) => {
             ConfigEntity::find()
                 .limit(limit)
                 .filter(config::Column::Id.gt(id.clone()))
