@@ -136,7 +136,7 @@ pub struct ModConfig {
 #[serde(rename_all = "camelCase")]
 pub struct GameConfig {
     pub name: String,
-    pub password: String,
+    pub password: Option<String>,
     pub password_admin: String,
     pub admins: Vec<String>,
     pub scenario_id: String,
@@ -153,7 +153,7 @@ impl Default for GameConfig {
     fn default() -> Self {
         Self {
             name: String::new(),
-            password: String::new(),
+            password: None,
             password_admin: String::new(),
             admins: Vec::new(),
             scenario_id: String::from("{59AD59368755F41A}Missions/21_GM_Eden.conf"),
