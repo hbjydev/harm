@@ -1,11 +1,12 @@
-use dropshot::{EmptyScanParams, PaginationParams, Query, ResultsPage, TypedBody, WhichPage};
-use dropshot::{endpoint, HttpError, HttpResponseOk, RequestContext};
+use dropshot::{endpoint, ClientErrorStatusCode, HttpError, HttpResponseOk, RequestContext};
+use dropshot::{EmptyScanParams, PaginationParams, Path, Query, ResultsPage, TypedBody, WhichPage};
 use entity::config::{self, Entity as ConfigEntity, GameConfig, ServerConfig};
-use entity::config::Model as ConfigModel;
-use sea_orm::{prelude::*, QueryOrder, QuerySelect};
+use entity::config::{ModConfig, Model as ConfigModel};
 use schemars::JsonSchema;
+use sea_orm::{prelude::*, QueryOrder, QuerySelect};
 use serde::Deserialize;
 use serde::Serialize;
+use uuid::Uuid;
 
 use crate::context::ServerCtx;
 
@@ -21,9 +22,7 @@ struct ServerPage {
 
 impl From<&ConfigModel> for ServerPage {
     fn from(value: &ConfigModel) -> Self {
-        Self {
-            id: value.id,
-        }
+        Self { id: value.id }
     }
 }
 
@@ -40,23 +39,19 @@ pub async fn list_servers(
     let db = &rqctx.context().db;
 
     let configs = match &pag_params.page {
-        WhichPage::First(..) => {
-            ConfigEntity::find()
-                .limit(limit)
-                .all(db)
-                .await
-                .map_err(|error| HttpError::for_internal_error(error.to_string()))
-        }
+        WhichPage::First(..) => ConfigEntity::find()
+            .limit(limit)
+            .all(db)
+            .await
+            .map_err(|error| HttpError::for_internal_error(error.to_string())),
 
-        WhichPage::Next(ServerPage { id }) => {
-            ConfigEntity::find()
-                .limit(limit)
-                .filter(config::Column::Id.gt(id.clone()))
-                .order_by_asc(config::Column::Id)
-                .all(db)
-                .await
-                .map_err(|error| HttpError::for_internal_error(error.to_string()))
-        }
+        WhichPage::Next(ServerPage { id }) => ConfigEntity::find()
+            .limit(limit)
+            .filter(config::Column::Id.gt(id.clone()))
+            .order_by_asc(config::Column::Id)
+            .all(db)
+            .await
+            .map_err(|error| HttpError::for_internal_error(error.to_string())),
     }?;
 
     Ok(HttpResponseOk(ResultsPage::new(
@@ -64,6 +59,39 @@ pub async fn list_servers(
         &EmptyScanParams {},
         |p: &ConfigModel, _| ServerPage::from(p),
     )?))
+}
+
+#[derive(JsonSchema, Deserialize)]
+struct GetServerPath {
+    /// The ID of the server to fetch data for.
+    id: Uuid,
+}
+
+#[endpoint(
+    method = GET,
+    path = "/servers/{id}",
+)]
+pub async fn get_server(
+    rqctx: RequestContext<ServerCtx>,
+    path: Path<GetServerPath>,
+) -> Result<HttpResponseOk<ConfigModel>, HttpError> {
+    let db = &rqctx.context().db;
+    let path = path.into_inner();
+
+    let config = ConfigEntity::find()
+        .filter(Expr::col(config::Column::Id).eq(path.id))
+        .one(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
+
+    if let Some(cfg) = config {
+        Ok(HttpResponseOk(cfg))
+    } else {
+        Err(HttpError::for_not_found(
+            Some("NO_SUCH_SERVER".to_string()),
+            "No server with that ID was found.".to_string(),
+        ))
+    }
 }
 
 #[derive(JsonSchema, Serialize, Deserialize)]
@@ -93,9 +121,120 @@ pub async fn create_server(
             ..Default::default()
         }),
     })
-        .exec_with_returning(db)
-        .await
-        .map_err(|error| HttpError::for_internal_error(format!("failed to insert server: {}", error)))?;
+    .exec_with_returning(db)
+    .await
+    .map_err(|error| {
+        HttpError::for_internal_error(format!("failed to insert server: {}", error))
+    })?;
 
     Ok(HttpResponseOk(insert))
+}
+
+#[derive(JsonSchema, Deserialize, Serialize)]
+struct AddModResponse {
+    success: bool,
+}
+
+#[derive(JsonSchema, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AddModRequest {
+    mod_id: String,
+    name: Option<String>,
+}
+
+#[endpoint(
+    method = POST,
+    path = "/servers/{id}/mods"
+)]
+pub async fn add_mod(
+    rqctx: RequestContext<ServerCtx>,
+    path: Path<GetServerPath>,
+    body: TypedBody<AddModRequest>,
+) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
+    let db = &rqctx.context().db;
+    let path = path.into_inner();
+
+    let config = ConfigEntity::find()
+        .filter(Expr::col(config::Column::Id).eq(path.id))
+        .one(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
+
+    if let Some(mut cfg) = config {
+        let mod_body = body.into_inner();
+
+        let existing_ids: Vec<String> = cfg
+            .config
+            .game
+            .mods
+            .iter()
+            .map(|e| e.mod_id.clone())
+            .collect();
+        if existing_ids.contains(&mod_body.mod_id.clone()) {
+            return Err(HttpError::for_client_error(
+                Some("MOD_ALREADY_ADDED".to_string()),
+                ClientErrorStatusCode::BAD_REQUEST,
+                "A mod with that ID already exists on this server's configuration!".to_string(),
+            ));
+        }
+
+        let mod_block = ModConfig {
+            mod_id: mod_body.mod_id,
+            name: match mod_body.name {
+                Some(name) => name,
+                None => String::new(),
+            },
+            required: true,
+        };
+
+        cfg.config.game.mods.push(mod_block);
+
+        ConfigEntity::update(config::ActiveModel {
+            id: sea_orm::ActiveValue::Unchanged(cfg.id),
+            title: sea_orm::ActiveValue::Unchanged(cfg.title),
+            config: sea_orm::ActiveValue::Set(cfg.config),
+        })
+        .exec(db)
+        .await
+        .map_err(|e| HttpError::for_internal_error(format!("failed to update config: {}", e)))?;
+
+        return Ok(HttpResponseOk(AddModResponse { success: true }));
+    }
+
+    Err(HttpError::for_not_found(
+        Some("NO_SUCH_SERVER".to_string()),
+        "No server with that ID was found.".to_string(),
+    ))
+}
+
+#[derive(JsonSchema, Deserialize, Serialize)]
+struct ListModsResponse {
+    mods: Vec<ModConfig>,
+}
+
+#[endpoint(
+    method = GET,
+    path = "/servers/{id}/mods"
+)]
+pub async fn list_mods(
+    rqctx: RequestContext<ServerCtx>,
+    path: Path<GetServerPath>,
+) -> Result<HttpResponseOk<ListModsResponse>, HttpError> {
+    let db = &rqctx.context().db;
+    let path = path.into_inner();
+
+    let config = ConfigEntity::find()
+        .filter(Expr::col(config::Column::Id).eq(path.id))
+        .one(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
+
+    if let Some(cfg) = config {
+        return Ok(HttpResponseOk(ListModsResponse { mods: cfg.config.game.mods }));
+    }
+
+    Err(HttpError::for_not_found(
+        Some("NO_SUCH_SERVER".to_string()),
+        "No server with that ID was found.".to_string(),
+    ))
 }

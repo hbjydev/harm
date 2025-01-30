@@ -1,4 +1,6 @@
 use clap::{Parser, Subcommand};
+use serde_json::Value;
+use uuid::Uuid;
 
 #[derive(Subcommand)]
 enum Command {
@@ -12,6 +14,11 @@ enum Command {
         /// Where HARM's sqlite database should be.
         database_url: String,
     },
+
+    ExportConfig {
+        #[clap(long, short)]
+        id: Uuid,
+    }
 }
 
 #[derive(Parser)]
@@ -33,6 +40,21 @@ async fn main() -> Result<(), String> {
     match &command {
         Command::Start { port, database_url } => {
             api::start(port.clone(), database_url.clone()).await
+        },
+
+        Command::ExportConfig { id } => {
+            let resp = reqwest::get(format!("http://localhost:10658/servers/{}", id))
+                .await
+                .map_err(|e| format!("failed to query server: {}", e))?
+                .json::<Value>()
+                .await
+                .map_err(|e| format!("failed to parse response: {}", e))?;
+
+            let cfg = resp.get("config").unwrap().to_string();
+
+            println!("{}", cfg);
+
+            Ok(())
         }
     }
 }

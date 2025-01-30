@@ -33,7 +33,10 @@ pub async fn start(port: u16, database_url: String) -> Result<(), String> {
 
     let mut api = ApiDescription::<ServerCtx>::new();
     api.register(apis::server::list_servers).unwrap();
+    api.register(apis::server::get_server).unwrap();
     api.register(apis::server::create_server).unwrap();
+    api.register(apis::server::add_mod).unwrap();
+    api.register(apis::server::list_mods).unwrap();
 
     let server = ServerBuilder::new(api, ctx, log)
         .config(config_dropshot)

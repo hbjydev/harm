@@ -8,7 +8,10 @@ directories = "6.0.0"
 dropshot = "0.15.1"
 entity = { version = "0.1.0", path = "../entity" }
 migration = { version = "0.1.0", path = "../migration" }
+reqwest = { version = "0.12.12", features = ["json"] }
 schemars = { version = "0.8.21", features = ["derive_json_schema", "uuid", "chrono", "arrayvec"] }
 sea-orm = { version = "1.1.4", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros", "with-json", "with-chrono", "with-uuid"] }
 serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
 tokio = { version = "1.43.0", features = ["rt-multi-thread", "macros"] }
+uuid = { version = "1.12.1", features = ["v4"] }
