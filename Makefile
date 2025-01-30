@@ -29,4 +29,4 @@ build:
 dist: build
 	mkdir -pv $(DIST_DIR)
 	tar -czvf $(DIST_DIR)/harm-$(ARCH)-$(OS).tar.gz \
-		-C $(WORK_DIR)/target/$(TARGET) harm
+		-C $(WORK_DIR)/target/$(TARGET) harm*
