@@ -4,10 +4,12 @@ use clap::{Parser, Subcommand};
 enum Command {
     /// Start HARM's services.
     Start {
-        #[clap(default_value = "10658", long)]
+        #[clap(default_value = "10658", long, short)]
+        /// The port HARM's API should run on.
         port: u16,
 
-        #[clap(default_value = "sqlite::memory:", long)]
+        #[clap(default_value = "sqlite::memory:", long, short = 'd')]
+        /// Where HARM's sqlite database should be.
         database_url: String,
     },
 }
