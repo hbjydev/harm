@@ -234,7 +234,9 @@ pub async fn list_mods(
         .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
 
     if let Some(cfg) = config {
-        return Ok(HttpResponseOk(ListModsResponse { mods: cfg.config.game.mods }));
+        return Ok(HttpResponseOk(ListModsResponse {
+            mods: cfg.config.game.mods,
+        }));
     }
 
     Err(HttpError::for_not_found(
@@ -264,7 +266,8 @@ pub async fn start_server(
         let path = PathBuf::from(&rqctx.context().reforger_path);
         let parent_path = path.parent().unwrap();
         let config_path = parent_path.join(format!("{}.json", cfg.id.clone()));
-        let config_str = serde_json::to_string(&cfg.config).map_err(|e| HttpError::for_internal_error(format!("failed to spawn server: {}", e)))?;
+        let config_str = serde_json::to_string(&cfg.config)
+            .map_err(|e| HttpError::for_internal_error(format!("failed to spawn server: {}", e)))?;
 
         let mut file = fs::File::create(config_path.clone()).unwrap();
         file.write_all(config_str.as_bytes()).unwrap();
@@ -278,7 +281,7 @@ pub async fn start_server(
             .spawn()
             .expect("failed to spawn");
 
-        return Ok(HttpResponseOk(AddModResponse{ success: true }));
+        return Ok(HttpResponseOk(AddModResponse { success: true }));
     }
 
     Err(HttpError::for_not_found(
@@ -329,7 +332,13 @@ pub async fn delete_mod(
             ));
         }
 
-        let idx = cfg.config.game.mods.iter().position(|x| x.mod_id == path.mod_id.clone()).unwrap();
+        let idx = cfg
+            .config
+            .game
+            .mods
+            .iter()
+            .position(|x| x.mod_id == path.mod_id.clone())
+            .unwrap();
         cfg.config.game.mods.remove(idx);
 
         ConfigEntity::update(config::ActiveModel {

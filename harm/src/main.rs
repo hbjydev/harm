@@ -22,7 +22,7 @@ enum Command {
     ExportConfig {
         #[clap(long, short)]
         id: Uuid,
-    }
+    },
 }
 
 #[derive(Parser)]
@@ -42,9 +42,11 @@ async fn main() -> Result<(), String> {
     let Cli { command } = cli;
 
     match &command {
-        Command::Start { port, database_url, reforger } => {
-            api::start(port.clone(), database_url.clone(), reforger.clone()).await
-        },
+        Command::Start {
+            port,
+            database_url,
+            reforger,
+        } => api::start(port.clone(), database_url.clone(), reforger.clone()).await,
 
         Command::ExportConfig { id } => {
             let resp = reqwest::get(format!("http://localhost:10658/servers/{}", id))

@@ -29,7 +29,10 @@ pub async fn start(port: u16, database_url: String, reforger_path: String) -> Re
         .await
         .map_err(|error| format!("failed to migrate db: {}", error))?;
 
-    let ctx = ServerCtx { db: db_conn, reforger_path };
+    let ctx = ServerCtx {
+        db: db_conn,
+        reforger_path,
+    };
 
     let mut api = ApiDescription::<ServerCtx>::new();
     api.register(apis::server::list_servers).unwrap();
