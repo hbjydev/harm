@@ -97,11 +97,16 @@ pub struct GameProperties {
     pub server_min_grass_distance: u16,
     pub fast_validation: bool,
     pub network_view_distance: u16,
+    #[serde(rename = "battlEye")]
     pub battleye: bool,
     pub disable_third_person: bool,
+    #[serde(rename = "VONDisableUI")]
     pub von_disable_ui: bool,
+    #[serde(rename = "VONDisableDirectSpeechUI")]
     pub von_disable_direct_speech_ui: bool,
+    #[serde(rename = "VONCanTransmitCrossFaction")]
     pub von_can_transmit_cross_faction: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mission_header: Option<Json>,
 }
 
@@ -184,12 +189,15 @@ impl Default for JoinQueueConfig {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct OperatingConfig {
-    pub lobby_player_synchronize: bool,
+    pub lobby_player_synchronise: bool,
     pub disable_crash_reporter: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub disable_navmesh_streaming: Option<Vec<String>>,
     pub disable_server_shutdown: bool,
+    #[serde(rename = "disableAI")]
     pub disable_ai: bool,
     pub player_save_time: i16,
+    #[serde(rename = "aiLimit")]
     pub ai_limit: i16,
     pub slot_reservation_timeout: i16,
     pub join_queue: JoinQueueConfig,
@@ -198,7 +206,7 @@ pub struct OperatingConfig {
 impl Default for OperatingConfig {
     fn default() -> Self {
         Self {
-            lobby_player_synchronize: true,
+            lobby_player_synchronise: true,
             disable_crash_reporter: false,
             disable_navmesh_streaming: None,
             disable_server_shutdown: false,
