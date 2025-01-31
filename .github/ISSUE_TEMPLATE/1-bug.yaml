@@ -1,6 +1,6 @@
 ---
 name: 🐛 Bug Report
-about: Report an issue you've experienced using HARM.
+description: Report an issue you've experienced using HARM.
 labels: bug,needs-triage
 body:
   - type: textarea
