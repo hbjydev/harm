@@ -288,7 +288,7 @@ pub async fn stop_server(
     path: Path<GetServerPath>,
 ) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
     let db = &rqctx.context().db;
-    let channels = &rqctx.context().server_channels.lock().await;
+    let mut channels = rqctx.context().server_channels.lock().await;
     let path = path.into_inner();
 
     let config = ConfigEntity::find()
@@ -305,6 +305,7 @@ pub async fn stop_server(
         let tx = tx.unwrap();
         tx.send(Action::Stop).unwrap();
 
+        channels.remove(&cfg.id.clone().to_string());
         return Ok(HttpResponseOk(AddModResponse { success: true }));
     }
 
