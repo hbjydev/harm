@@ -1,11 +1,8 @@
-use std::fs;
-use std::io::Write;
-use std::path::PathBuf;
-
 use dropshot::{endpoint, ClientErrorStatusCode, HttpError, HttpResponseOk, RequestContext};
 use dropshot::{EmptyScanParams, PaginationParams, Path, Query, ResultsPage, TypedBody, WhichPage};
 use entity::config::{self, Entity as ConfigEntity, GameConfig, ServerConfig};
 use entity::config::{ModConfig, Model as ConfigModel};
+use harm_pm::{get_server_ch, run_server, Action};
 use schemars::JsonSchema;
 use sea_orm::{prelude::*, QueryOrder, QuerySelect};
 use serde::Deserialize;
@@ -251,6 +248,7 @@ pub async fn start_server(
     path: Path<GetServerPath>,
 ) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
     let db = &rqctx.context().db;
+    let channels = &rqctx.context().server_channels;
     let path = path.into_inner();
 
     let config = ConfigEntity::find()
@@ -260,23 +258,52 @@ pub async fn start_server(
         .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
 
     if let Some(cfg) = config {
-        let path = PathBuf::from(&rqctx.context().reforger_path);
-        let parent_path = path.parent().unwrap();
-        let config_path = parent_path.join(format!("{}.json", cfg.id.clone()));
-        let config_str = serde_json::to_string(&cfg.config)
-            .map_err(|e| HttpError::for_internal_error(format!("failed to spawn server: {}", e)))?;
+        let (tx, rx) = get_server_ch();
+        channels.lock().await.insert(cfg.id.clone().to_string(), tx);
 
-        let mut file = fs::File::create(config_path.clone()).unwrap();
-        file.write_all(config_str.as_bytes()).unwrap();
+        tokio::spawn(async move {
+            run_server(
+                rqctx.context().reforger_path.clone(),
+                cfg.id.to_string(),
+                cfg.config,
+                rx,
+            ).await
+        });
 
-        tokio::process::Command::new(path.clone())
-            .current_dir(parent_path)
-            .arg("-maxFPS")
-            .arg("60")
-            .arg("-config")
-            .arg(config_path.to_str().unwrap())
-            .spawn()
-            .expect("failed to spawn");
+        return Ok(HttpResponseOk(AddModResponse { success: true }));
+    }
+
+    Err(HttpError::for_not_found(
+        Some("NO_SUCH_SERVER".to_string()),
+        "No server with that ID was found.".to_string(),
+    ))
+}
+
+#[endpoint(
+    method = POST,
+    path = "/servers/{id}/stop"
+)]
+pub async fn stop_server(
+    rqctx: RequestContext<ServerCtx>,
+    path: Path<GetServerPath>,
+) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
+    let db = &rqctx.context().db;
+    let channels = &rqctx.context().server_channels.lock().await;
+    let path = path.into_inner();
+
+    let config = ConfigEntity::find()
+        .filter(Expr::col(config::Column::Id).eq(path.id))
+        .one(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
+
+    if let Some(cfg) = config {
+        let tx = channels.get(&cfg.id.clone().to_string());
+        if let None = tx {
+            return Ok(HttpResponseOk(AddModResponse { success: false }));
+        }
+        let tx = tx.unwrap();
+        tx.send(Action::Stop).unwrap();
 
         return Ok(HttpResponseOk(AddModResponse { success: true }));
     }

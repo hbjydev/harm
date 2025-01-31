@@ -7,6 +7,7 @@ edition = "2021"
 directories = "6.0.0"
 dropshot = "0.15.1"
 entity = { version = "0.1.0", path = "../entity" }
+harm_pm = { version = "0.1.0", path = "../pm" }
 migration = { version = "0.1.0", path = "../migration" }
 reqwest = { version = "0.12.12", features = ["json"] }
 schemars = { version = "0.8.21", features = ["derive_json_schema", "uuid", "chrono", "arrayvec"] }

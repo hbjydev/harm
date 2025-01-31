@@ -1,8 +1,9 @@
-use std::net::{Ipv4Addr, SocketAddr};
+use std::{collections::BTreeMap, net::{Ipv4Addr, SocketAddr}};
 
 use context::ServerCtx;
 use dropshot::{ApiDescription, ConfigDropshot, ConfigLogging, ServerBuilder};
 use migration::MigratorTrait;
+use tokio::sync::Mutex;
 
 mod apis;
 mod context;
@@ -32,6 +33,7 @@ pub async fn start(port: u16, database_url: String, reforger_path: String) -> Re
     let ctx = ServerCtx {
         db: db_conn,
         reforger_path,
+        server_channels: Mutex::new(BTreeMap::new()),
     };
 
     let mut api = ApiDescription::<ServerCtx>::new();
@@ -39,6 +41,7 @@ pub async fn start(port: u16, database_url: String, reforger_path: String) -> Re
     api.register(apis::server::get_server).unwrap();
     api.register(apis::server::create_server).unwrap();
     api.register(apis::server::start_server).unwrap();
+    api.register(apis::server::stop_server).unwrap();
     api.register(apis::server::add_mod).unwrap();
     api.register(apis::server::list_mods).unwrap();
     api.register(apis::server::delete_mod).unwrap();

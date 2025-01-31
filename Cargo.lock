@@ -115,12 +115,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.95"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
+
+[[package]]
 name = "api"
 version = "0.1.0"
 dependencies = [
  "directories",
  "dropshot",
  "entity",
+ "harm_pm",
  "migration",
  "reqwest",
  "schemars",
@@ -1198,6 +1205,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "harm_pm"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "entity",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.11",
+ "tokio",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2262,7 +2281,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
