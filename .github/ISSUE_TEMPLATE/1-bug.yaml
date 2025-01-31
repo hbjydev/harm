@@ -1,0 +1,39 @@
+---
+name: 🐛 Bug Report
+about: Report an issue you've experienced using HARM.
+labels: bug,needs-triage
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: What was the expected behaviour?
+      placeholder: When I hit the button, it should do something.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What _actually_ happened?
+      placeholder: When I hit the button, it yelled mean things at my mother.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we reproduce the error?
+      placeholder: |
+        1. Turn off the censorship option in settings
+        2. It yells at my mum :(
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: What platform are you running HARM on?
+      options:
+        - Linux (Ubuntu, Fedora, etc.)
+        - Alternative Linux (NixOS, Guix, etc.)
+        - Windows PC (Windows 10, Windows 11, etc.)
+        - Windows Server
+    validations:
+      required: true
