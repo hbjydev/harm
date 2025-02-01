@@ -20,7 +20,7 @@ pub enum ServerState {
 #[derive(Debug)]
 pub struct Server {
     pub id: Uuid,
-    pub process: Option<tokio::process::Child>,
+    pub process: Option<Child>,
     pub state: ServerState,
 }
 
