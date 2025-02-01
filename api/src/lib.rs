@@ -1,12 +1,9 @@
-use std::{
-    collections::BTreeMap,
-    net::{Ipv4Addr, SocketAddr},
-};
+use std::net::{Ipv4Addr, SocketAddr};
 
 use context::ServerCtx;
 use dropshot::{ApiDescription, ConfigDropshot, ConfigLogging, ServerBuilder};
 use harm_migration::MigratorTrait;
-use tokio::sync::Mutex;
+use harm_pm::manager::ProcessManager;
 
 mod apis;
 mod context;
@@ -33,10 +30,11 @@ pub async fn start(port: u16, database_url: String, reforger_path: String) -> Re
         .await
         .map_err(|error| format!("failed to migrate db: {}", error))?;
 
+    let process_manager = ProcessManager::new(reforger_path, log.clone());
+
     let ctx = ServerCtx {
         db: db_conn,
-        reforger_path,
-        server_channels: Mutex::new(BTreeMap::new()),
+        process_manager,
     };
 
     let mut api = ApiDescription::<ServerCtx>::new();

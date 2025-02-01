@@ -1,11 +1,7 @@
-use std::collections::BTreeMap;
-
-use harm_pm::Action;
+use harm_pm::manager::ProcessManager;
 use sea_orm::DatabaseConnection;
-use tokio::sync::{mpsc::UnboundedSender, Mutex};
 
 pub struct ServerCtx {
+    pub process_manager: ProcessManager,
     pub db: DatabaseConnection,
-    pub reforger_path: String,
-    pub server_channels: Mutex<BTreeMap<String, UnboundedSender<Action>>>,
 }

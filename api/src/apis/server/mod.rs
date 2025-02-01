@@ -2,7 +2,6 @@ use dropshot::{endpoint, ClientErrorStatusCode, HttpError, HttpResponseOk, Reque
 use dropshot::{EmptyScanParams, PaginationParams, Path, Query, ResultsPage, TypedBody, WhichPage};
 use harm_entity::config::{self, Entity as ConfigEntity, GameConfig, ServerConfig};
 use harm_entity::config::{ModConfig, Model as ConfigModel};
-use harm_pm::{get_server_ch, run_server, Action};
 use schemars::JsonSchema;
 use sea_orm::{prelude::*, QueryOrder, QuerySelect};
 use serde::Deserialize;
@@ -131,6 +130,70 @@ pub async fn create_server(
     Ok(HttpResponseOk(insert))
 }
 
+#[endpoint(
+    method = POST,
+    path = "/servers/{id}/start"
+)]
+pub async fn start_server(
+    rqctx: RequestContext<ServerCtx>,
+    path: Path<GetServerPath>,
+) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
+    let db = &rqctx.context().db;
+    let path = path.into_inner();
+    let pm = &rqctx.context().process_manager;
+
+    let config = ConfigEntity::find()
+        .filter(Expr::col(config::Column::Id).eq(path.id))
+        .one(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
+
+    if let Some(cfg) = config {
+        pm.start_server(cfg.id, cfg.config).await.map_err(|e| {
+            HttpError::for_internal_error(format!("Could not spawn Reforger process: {}", e))
+        })?;
+
+        return Ok(HttpResponseOk(AddModResponse { success: true }));
+    }
+
+    Err(HttpError::for_not_found(
+        Some("NO_SUCH_SERVER".to_string()),
+        "No server with that ID was found.".to_string(),
+    ))
+}
+
+#[endpoint(
+    method = POST,
+    path = "/servers/{id}/stop"
+)]
+pub async fn stop_server(
+    rqctx: RequestContext<ServerCtx>,
+    path: Path<GetServerPath>,
+) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
+    let db = &rqctx.context().db;
+    let pm = &rqctx.context().process_manager;
+    let path = path.into_inner();
+
+    let config = ConfigEntity::find()
+        .filter(Expr::col(config::Column::Id).eq(path.id))
+        .one(db)
+        .await
+        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
+
+    if let Some(cfg) = config {
+        pm.stop_server(cfg.id).await.map_err(|e| {
+            HttpError::for_internal_error(format!("Could not stop Reforger process: {}", e))
+        })?;
+
+        return Ok(HttpResponseOk(AddModResponse { success: true }));
+    }
+
+    Err(HttpError::for_not_found(
+        Some("NO_SUCH_SERVER".to_string()),
+        "No server with that ID was found.".to_string(),
+    ))
+}
+
 #[derive(JsonSchema, Deserialize, Serialize)]
 struct AddModResponse {
     success: bool,
@@ -231,83 +294,6 @@ pub async fn list_mods(
         return Ok(HttpResponseOk(ListModsResponse {
             mods: cfg.config.game.mods,
         }));
-    }
-
-    Err(HttpError::for_not_found(
-        Some("NO_SUCH_SERVER".to_string()),
-        "No server with that ID was found.".to_string(),
-    ))
-}
-
-#[endpoint(
-    method = POST,
-    path = "/servers/{id}/start"
-)]
-pub async fn start_server(
-    rqctx: RequestContext<ServerCtx>,
-    path: Path<GetServerPath>,
-) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
-    let db = &rqctx.context().db;
-    let channels = &rqctx.context().server_channels;
-    let path = path.into_inner();
-
-    let config = ConfigEntity::find()
-        .filter(Expr::col(config::Column::Id).eq(path.id))
-        .one(db)
-        .await
-        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
-
-    if let Some(cfg) = config {
-        let (tx, rx) = get_server_ch();
-        channels.lock().await.insert(cfg.id.clone().to_string(), tx);
-
-        tokio::spawn(async move {
-            run_server(
-                rqctx.context().reforger_path.clone(),
-                cfg.id.to_string(),
-                cfg.config,
-                rx,
-            )
-            .await
-        });
-
-        return Ok(HttpResponseOk(AddModResponse { success: true }));
-    }
-
-    Err(HttpError::for_not_found(
-        Some("NO_SUCH_SERVER".to_string()),
-        "No server with that ID was found.".to_string(),
-    ))
-}
-
-#[endpoint(
-    method = POST,
-    path = "/servers/{id}/stop"
-)]
-pub async fn stop_server(
-    rqctx: RequestContext<ServerCtx>,
-    path: Path<GetServerPath>,
-) -> Result<HttpResponseOk<AddModResponse>, HttpError> {
-    let db = &rqctx.context().db;
-    let mut channels = rqctx.context().server_channels.lock().await;
-    let path = path.into_inner();
-
-    let config = ConfigEntity::find()
-        .filter(Expr::col(config::Column::Id).eq(path.id))
-        .one(db)
-        .await
-        .map_err(|error| HttpError::for_internal_error(error.to_string()))?;
-
-    if let Some(cfg) = config {
-        let tx = channels.get(&cfg.id.clone().to_string());
-        if tx.is_none() {
-            return Ok(HttpResponseOk(AddModResponse { success: false }));
-        }
-        let tx = tx.unwrap();
-        tx.send(Action::Stop).unwrap();
-
-        channels.remove(&cfg.id.clone().to_string());
-        return Ok(HttpResponseOk(AddModResponse { success: true }));
     }
 
     Err(HttpError::for_not_found(
