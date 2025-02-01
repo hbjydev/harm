@@ -131,6 +131,7 @@ impl ProcessManager {
                 );
                 process.kill().await?;
                 server.state = ServerState::Stopped;
+                server.process = None;
             } else {
                 error!(
                     self.logger,
