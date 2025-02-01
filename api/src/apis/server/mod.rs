@@ -1,7 +1,7 @@
 use dropshot::{endpoint, ClientErrorStatusCode, HttpError, HttpResponseOk, RequestContext};
 use dropshot::{EmptyScanParams, PaginationParams, Path, Query, ResultsPage, TypedBody, WhichPage};
-use entity::config::{self, Entity as ConfigEntity, GameConfig, ServerConfig};
-use entity::config::{ModConfig, Model as ConfigModel};
+use harm_entity::config::{self, Entity as ConfigEntity, GameConfig, ServerConfig};
+use harm_entity::config::{ModConfig, Model as ConfigModel};
 use harm_pm::{get_server_ch, run_server, Action};
 use schemars::JsonSchema;
 use sea_orm::{prelude::*, QueryOrder, QuerySelect};
@@ -267,7 +267,8 @@ pub async fn start_server(
                 cfg.id.to_string(),
                 cfg.config,
                 rx,
-            ).await
+            )
+            .await
         });
 
         return Ok(HttpResponseOk(AddModResponse { success: true }));
@@ -299,7 +300,7 @@ pub async fn stop_server(
 
     if let Some(cfg) = config {
         let tx = channels.get(&cfg.id.clone().to_string());
-        if let None = tx {
+        if tx.is_none() {
             return Ok(HttpResponseOk(AddModResponse { success: false }));
         }
         let tx = tx.unwrap();

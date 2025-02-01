@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-api = { version = "0.1.0", path = "../api" }
+harm_api = { version = "0.1.0", path = "../api" }
 clap = { version = "4.5.27", default-features = false, features = ["color", "derive", "help", "std", "suggestions", "usage"] }
-entity = { version = "0.1.0", path = "../entity" }
+harm_entity = { version = "0.1.0", path = "../entity" }
 reqwest = { version = "0.12.12", features = ["json", "rustls-tls"] }
 serde = "1.0.217"
 serde_json = "1.0.138"

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
-use entity::config::ServerConfig;
+use harm_entity::config::ServerConfig;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};

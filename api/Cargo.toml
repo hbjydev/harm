@@ -1,14 +1,14 @@
 [package]
-name = "api"
+name = "harm_api"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 directories = "6.0.0"
 dropshot = "0.15.1"
-entity = { version = "0.1.0", path = "../entity" }
+harm_entity = { version = "0.1.0", path = "../entity" }
 harm_pm = { version = "0.1.0", path = "../pm" }
-migration = { version = "0.1.0", path = "../migration" }
+harm_migration = { version = "0.1.0", path = "../migration" }
 reqwest = { version = "0.12.12", features = ["json"] }
 schemars = { version = "0.8.21", features = ["derive_json_schema", "uuid", "chrono", "arrayvec"] }
 sea-orm = { version = "1.1.4", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros", "with-json", "with-chrono", "with-uuid"] }

@@ -1,8 +1,11 @@
-use std::{collections::BTreeMap, net::{Ipv4Addr, SocketAddr}};
+use std::{
+    collections::BTreeMap,
+    net::{Ipv4Addr, SocketAddr},
+};
 
 use context::ServerCtx;
 use dropshot::{ApiDescription, ConfigDropshot, ConfigLogging, ServerBuilder};
-use migration::MigratorTrait;
+use harm_migration::MigratorTrait;
 use tokio::sync::Mutex;
 
 mod apis;
@@ -26,7 +29,7 @@ pub async fn start(port: u16, database_url: String, reforger_path: String) -> Re
         .await
         .map_err(|error| format!("failed to open db conn: {}", error))?;
 
-    migration::Migrator::up(&db_conn, None)
+    harm_migration::Migrator::up(&db_conn, None)
         .await
         .map_err(|error| format!("failed to migrate db: {}", error))?;
 

@@ -121,24 +121,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 
 [[package]]
-name = "api"
-version = "0.1.0"
-dependencies = [
- "directories",
- "dropshot",
- "entity",
- "harm_pm",
- "migration",
- "reqwest",
- "schemars",
- "sea-orm",
- "serde",
- "serde_json",
- "tokio",
- "uuid 1.12.1",
-]
-
-[[package]]
 name = "arrayvec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -876,17 +858,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "entity"
-version = "0.1.0"
-dependencies = [
- "schemars",
- "sea-orm",
- "serde",
- "serde_json",
- "uuid 1.12.1",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1194,9 +1165,9 @@ dependencies = [
 name = "harm"
 version = "0.1.0"
 dependencies = [
- "api",
  "clap",
- "entity",
+ "harm_api",
+ "harm_entity",
  "reqwest",
  "serde",
  "serde_json",
@@ -1205,11 +1176,48 @@ dependencies = [
 ]
 
 [[package]]
+name = "harm_api"
+version = "0.1.0"
+dependencies = [
+ "directories",
+ "dropshot",
+ "harm_entity",
+ "harm_migration",
+ "harm_pm",
+ "reqwest",
+ "schemars",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "tokio",
+ "uuid 1.12.1",
+]
+
+[[package]]
+name = "harm_entity"
+version = "0.1.0"
+dependencies = [
+ "schemars",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "uuid 1.12.1",
+]
+
+[[package]]
+name = "harm_migration"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "sea-orm-migration",
+]
+
+[[package]]
 name = "harm_pm"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "entity",
+ "harm_entity",
  "serde",
  "serde_json",
  "thiserror 2.0.11",
@@ -1779,14 +1787,6 @@ name = "memchr"
 version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
-
-[[package]]
-name = "migration"
-version = "0.1.0"
-dependencies = [
- "async-std",
- "sea-orm-migration",
-]
 
 [[package]]
 name = "mime"
