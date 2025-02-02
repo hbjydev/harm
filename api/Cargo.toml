@@ -6,9 +6,10 @@ edition = "2021"
 [dependencies]
 directories = "6.0.0"
 dropshot = "0.15.1"
-harm_entity = { version = "0.1.0", path = "../entity" }
+harm_entity = { version = "0.1.0", path = "../entity", features = ["schemars"] }
 harm_pm = { version = "0.1.0", path = "../pm" }
 harm_migration = { version = "0.1.0", path = "../migration" }
+harm_schemas = { version = "0.1.0", path = "../schemas", features = ["serde", "schemars"] }
 reqwest = { version = "0.12.12", features = ["json"] }
 schemars = { version = "0.8.21", features = ["derive_json_schema", "uuid", "chrono", "arrayvec"] }
 sea-orm = { version = "1.1.4", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros", "with-json", "with-chrono", "with-uuid"] }

@@ -13,9 +13,11 @@
     "windows": [
       {
         "decorations": false,
-        "title": "harm_desktop",
+        "title": "HARM",
         "width": 800,
-        "height": 600
+        "minWidth": 800,
+        "height": 600,
+        "minHeight": 600
       }
     ],
     "security": {

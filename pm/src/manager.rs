@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, process::Stdio, sync::Arc};
 
 use anyhow::{Error, Result};
-use harm_entity::config::ServerConfig;
+use harm_schemas::ServerConfig;
 use slog::{debug, error, info, Logger};
 use tokio::{
     fs,

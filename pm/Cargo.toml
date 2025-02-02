@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.95"
-harm_entity = { version = "0.1.0", path = "../entity" }
+harm_schemas = { version = "0.1.0", path = "../schemas", features = ["serde"] }
 serde = "1.0.217"
 serde_json = "1.0.138"
 slog = "2.7.0"

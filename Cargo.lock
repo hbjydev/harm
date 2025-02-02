@@ -2058,6 +2058,7 @@ dependencies = [
  "harm_entity",
  "harm_migration",
  "harm_pm",
+ "harm_schemas",
  "reqwest",
  "schemars",
  "sea-orm",
@@ -2071,17 +2072,26 @@ dependencies = [
 name = "harm_desktop"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "harm_pm",
+ "schemars",
+ "sea-orm",
  "serde",
  "serde_json",
+ "slog",
+ "slog-async",
+ "slog-term",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+ "tauri-plugin-store",
 ]
 
 [[package]]
 name = "harm_entity"
 version = "0.1.0"
 dependencies = [
+ "harm_schemas",
  "schemars",
  "sea-orm",
  "serde",
@@ -2102,13 +2112,23 @@ name = "harm_pm"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "harm_entity",
+ "harm_schemas",
  "serde",
  "serde_json",
  "slog",
  "thiserror 2.0.11",
  "tokio",
  "uuid 1.12.1",
+]
+
+[[package]]
+name = "harm_schemas"
+version = "0.1.0"
+dependencies = [
+ "schemars",
+ "sea-orm",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -5680,6 +5700,22 @@ dependencies = [
  "url",
  "windows 0.58.0",
  "zbus",
+]
+
+[[package]]
+name = "tauri-plugin-store"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c0c08fae6995909f5e9a0da6038273b750221319f2c0f3b526d6de1cde21505"
+dependencies = [
+ "dunce",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "thiserror 2.0.11",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
