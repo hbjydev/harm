@@ -1,41 +1,57 @@
-use harm_pm::manager::ProcessManager;
-use slog::{o, Drain, Logger};
-use tauri::{async_runtime::Mutex, App, Manager};
+use config::AppConfig;
+use tauri::{async_runtime::JoinHandle, AppHandle, Manager, State};
 
-pub struct AppState {
-    pub process_manager: ProcessManager,
-    pub logger: Logger,
+mod config;
+
+#[tauri::command]
+fn get_config() -> AppConfig {
+    AppConfig::read()
+}
+
+#[tauri::command]
+fn update_config(config: AppConfig) -> Result<(), String> {
+    config
+        .save()
+        .map_err(|e| format!("Failed to update config: {}", e))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .setup(|app| {
-            init_state(app);
-            Ok(())
-        })
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![
+            start_api,
+            stop_api,
+            get_config,
+            update_config
+        ])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-fn init_state(app: &mut App) {
-    let decorator = slog_term::TermDecorator::new().build();
-    let drain = slog_term::FullFormat::new(decorator).build().fuse();
-    let drain = slog_async::Async::new(drain).build().fuse();
+#[tauri::command]
+async fn start_api(app: AppHandle) -> Result<(), String> {
+    let config = AppConfig::read();
+    if config.reforger_path.is_none() {
+        return Err(String::from("No reforger_path set!"));
+    }
 
-    let logger = slog::Logger::root(drain, o!());
+    let future =
+        tauri::async_runtime::spawn(_start_api(config.api_port, config.reforger_path.unwrap()));
 
-    let process_manager = ProcessManager::new(
-        String::from("~/.local/Steam/steamapps/common/Arma Reforger Server/ArmaReforgerServer"),
-        logger.new(o!("name" => "process_manager")),
-    );
+    app.manage(future);
 
-    let state = AppState {
-        process_manager,
-        logger,
-    };
+    Ok(())
+}
 
-    app.manage(Mutex::new(state));
+#[tauri::command]
+async fn stop_api(state: State<'_, JoinHandle<Result<(), String>>>) -> Result<(), String> {
+    state.abort();
+    Ok(())
+}
+
+async fn _start_api(port: u16, reforger_path: String) -> Result<(), String> {
+    harm_api::start(port, String::from("sqlite::memory:"), reforger_path).await
 }

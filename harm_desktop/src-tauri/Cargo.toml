@@ -30,4 +30,8 @@ slog-async = "2.8.0"
 slog = "2.7.0"
 schemars = { version = "0.8.21", features = ["derive_json_schema", "uuid"] }
 sea-orm = { version = "1.1.4", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros", "with-json", "with-chrono", "with-uuid"] }
+harm_schemas = { version = "0.1.0", path = "../../schemas" }
+harm_api = { version = "0.1.0", path = "../../api" }
+dirs = "6.0.0"
+tauri-plugin-dialog = "2"
 
