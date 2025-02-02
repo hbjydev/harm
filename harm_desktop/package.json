@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.66.0",
+    "@tanstack/react-query-devtools": "^5.66.0",
+    "@tanstack/react-router": "^1.99.0",
+    "@tanstack/router-plugin": "^1.99.0",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.2.0",
     "@tauri-apps/plugin-opener": "^2",
