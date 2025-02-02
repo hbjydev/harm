@@ -1,6 +1,6 @@
 use dropshot::{endpoint, ClientErrorStatusCode, HttpError, HttpResponseOk, RequestContext};
 use dropshot::{EmptyScanParams, PaginationParams, Path, Query, ResultsPage, TypedBody, WhichPage};
-use harm_entity::config::{self, Model as ConfigModel, Entity as ConfigEntity};
+use harm_entity::config::{self, Entity as ConfigEntity, Model as ConfigModel};
 use harm_schemas::{GameConfig, ModConfig, ServerConfig};
 use schemars::JsonSchema;
 use sea_orm::{prelude::*, QueryOrder, QuerySelect};
