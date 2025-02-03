@@ -1,4 +1,4 @@
-import { Outlet, createRootRoute, redirect } from '@tanstack/react-router'
+import { createRootRoute, Outlet, redirect } from "@tanstack/react-router";
 import {
   Cross1Icon,
   MinusIcon,
@@ -8,18 +8,24 @@ import {
 import { getCurrentWindow, Window } from "@tauri-apps/api/window";
 import { PropsWithChildren, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { QueryClientProvider } from '@tanstack/react-query';
-import { RQKEY_HARM_CONFIG, useConfig, useConfigQueryOptions } from '../lib/state/config';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { queryClient } from '../lib/query';
-import { AppConfig } from '../lib/config';
+import { QueryClientProvider } from "@tanstack/react-query";
+import {
+  RQKEY_HARM_CONFIG,
+  useConfig,
+  useConfigQueryOptions,
+} from "../lib/state/config";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryClient } from "../lib/query";
+import { AppConfig } from "../lib/config";
 
 export const Route = createRootRoute({
   component: RootComponent,
   loader: async ({ location }) => {
     await queryClient.prefetchQuery(useConfigQueryOptions());
     const config = queryClient.getQueryData<AppConfig>([RQKEY_HARM_CONFIG]);
-    if (config && !config.reforger_path && location.href !== '/init') throw redirect({ href: '/init' });
+    if (config && !config.reforger_path && location.href !== "/init") {
+      throw redirect({ href: "/init" });
+    }
   },
 });
 
@@ -102,7 +108,7 @@ const InnerApp = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (config === undefined || !config.reforger_path) return;
     invoke("start_api");
-  }, [config])
+  }, [config]);
 
   return children;
 };

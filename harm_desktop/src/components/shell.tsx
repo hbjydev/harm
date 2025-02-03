@@ -1,13 +1,18 @@
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { PropsWithChildren, useState } from "react";
+import { useGetServersQuery } from "../lib/state/servers";
 
 type ShellProps = PropsWithChildren<{}>;
 
 export const Shell = ({ children }: ShellProps) => {
+  const serversQuery = useGetServersQuery();
+
   return (
     <div className="flex-1 grid grid-cols-[250px_auto]">
       <div className="flex flex-col bg-zinc-800 text-white p-4 gap-4">
-        <SidebarSection title="Servers" collapsedByDefault={false}>A</SidebarSection>
+        <SidebarSection title="Servers" collapsedByDefault={false}>
+          A
+        </SidebarSection>
         <SidebarSection title="Servers">B</SidebarSection>
         <SidebarSection title="Servers">C</SidebarSection>
         <SidebarSection title="Servers">D</SidebarSection>
@@ -36,11 +41,7 @@ const SidebarSection = (
         onClick={() => setCollapsed(!collapsed)}
       >
         <span className="text-medium">{title}</span>
-        {
-          collapsed
-            ? <ChevronUpIcon />
-            : <ChevronDownIcon />
-        }
+        {collapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
       </div>
       {collapsed && (
         <div className="flex flex-col *:py-2 pl-2">

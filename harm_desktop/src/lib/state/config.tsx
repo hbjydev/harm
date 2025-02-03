@@ -1,19 +1,25 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api/core";
 import { AppConfig } from "../config";
 
 export const RQKEY_HARM_CONFIG = "harm:config";
 export const RQKEY_HARM_CONFIG_UPDATE = "harm:config:update";
 
-export const useConfigQueryOptions = () => ({
-  queryKey: [RQKEY_HARM_CONFIG],
-  queryFn: () => invoke<AppConfig>("get_config"),
-});
+export const useConfigQueryOptions = () =>
+  queryOptions({
+    queryKey: [RQKEY_HARM_CONFIG],
+    queryFn: () => invoke<AppConfig>("get_config"),
+  });
 
 export const useConfigQuery = () => useQuery(useConfigQueryOptions());
 
 export const useConfig = () => {
-  const { data } = useConfigQuery()
+  const { data } = useConfigQuery();
   return data;
 };
 

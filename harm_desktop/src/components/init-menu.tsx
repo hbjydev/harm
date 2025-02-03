@@ -37,7 +37,10 @@ export const InitMenu = () => {
         </button>
         {reforgerPath && <p>{reforgerPath}</p>}
 
-        <button className="px-4 py-2 bg-zinc-800 text-white rounded-md" onClick={onSave}>
+        <button
+          className="px-4 py-2 bg-zinc-800 text-white rounded-md"
+          onClick={onSave}
+        >
           Save
         </button>
       </div>
