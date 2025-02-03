@@ -1,6 +1,15 @@
-use std::fs;
+use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
+
+pub fn config_path() -> PathBuf {
+    let config_dir = dirs::config_dir().unwrap();
+    let harm_config_dir = config_dir.join("harm");
+    if !fs::exists(&harm_config_dir).unwrap_or(false) {
+        fs::create_dir(&harm_config_dir).expect("Could not create HARM config directory.");
+    }
+    harm_config_dir
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AppConfig {
@@ -10,7 +19,7 @@ pub struct AppConfig {
 
 impl AppConfig {
     pub fn read() -> Self {
-        let config_dir = dirs::config_dir().unwrap();
+        let config_dir = config_path();
         let config_path = config_dir.join("config.json");
 
         if let Ok(config_str) = fs::read_to_string(config_path) {
@@ -25,7 +34,7 @@ impl AppConfig {
     }
 
     pub fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let config_dir = dirs::config_dir().unwrap();
+        let config_dir = config_path();
         let config_path = config_dir.join("config.json");
         let config_str = serde_json::to_string(self)?;
         fs::write(config_path, config_str.as_bytes())?;

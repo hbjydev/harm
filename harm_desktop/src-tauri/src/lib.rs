@@ -53,5 +53,7 @@ async fn stop_api(state: State<'_, JoinHandle<Result<(), String>>>) -> Result<()
 }
 
 async fn _start_api(port: u16, reforger_path: String) -> Result<(), String> {
-    harm_api::start(port, String::from("sqlite::memory:"), reforger_path).await
+    let db_path = config::config_path();
+    let db_url = format!("sqlite://{:?}?mode=rwc", db_path);
+    harm_api::start(port, db_url, reforger_path).await
 }
