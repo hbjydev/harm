@@ -23,11 +23,8 @@ impl AppConfig {
         let config_path = config_dir.join("config.json");
 
         if let Ok(config_str) = fs::read_to_string(config_path) {
-            let config_res: serde_json::Result<Self> = serde_json::from_str(&config_str);
-            match config_res {
-                Ok(config) => config,
-                Err(_) => Self::default(),
-            }
+            let config_res: serde_json::Result<Self> =
+                serde_json::from_str(&config_str).unwrap_or_default();
         } else {
             Self::default()
         }
