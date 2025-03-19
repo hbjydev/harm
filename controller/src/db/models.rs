@@ -1,12 +1,15 @@
+use std::str::FromStr;
+
 use crate::errors::Result;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use harm_schema::harm::servers::v0::ServerConfig;
-use libsql::{de, Connection};
+use libsql::{Connection, Row, de, params};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::Db;
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Server {
     pub id: Uuid,
     pub title: String,
@@ -24,14 +27,69 @@ impl Server {
         }
     }
 
+    pub async fn find_all(db: &Db) -> Result<Vec<Self>> {
+        let conn = db.conn();
+
+        let mut stmt = conn
+            .prepare("select id, title, created_at, config from servers")
+            .await?;
+
+        let mut rows = stmt.query(()).await?;
+        let mut servers = Vec::new();
+
+        loop {
+            match rows.next().await? {
+                Some(row) => servers.push(Self::from_row(&row)?),
+                None => break,
+            }
+        }
+
+        Ok(servers)
+    }
+
+    pub async fn find_by_id(db: &Db, id: Uuid) -> Result<Self> {
+        let conn = db.conn();
+        let mut stmt = conn
+            .prepare("select id, title, created_at, config from servers where id = ?")
+            .await?;
+
+        let row = stmt.query_row(params!(id.to_string(),)).await?;
+
+        Ok(Self::from_row(&row)?)
+    }
+
     pub async fn insert(&self, db: &Db) -> Result<()> {
         let conn = db.conn();
-        let stmt = conn.prepare(
-            "insert into servers (id, title, config, created_at) values (?, ?, ?, ?)",
-        ).await?;
+        let mut stmt = conn
+            .prepare("insert into servers (id, title, config, created_at) values (?, ?, ?, ?)")
+            .await?;
 
+        let conf_str: String = self.config.clone().try_into()?;
+
+        stmt.execute(params!(
+            self.id.to_string(),
+            self.title.clone(),
+            conf_str,
+            self.created_at.to_string(),
+        ))
+        .await?;
 
         Ok(())
+    }
+
+    fn from_row(row: &Row) -> Result<Self> {
+        let id = Uuid::parse_str(row.get_str(0)?)?;
+        let title = row.get(1)?;
+        let created_at = DateTime::<Utc>::from_str(row.get_str(1)?)?;
+
+        let config = serde_json::from_str(row.get_str(3)?)?;
+
+        Ok(Server {
+            id,
+            title,
+            created_at,
+            config,
+        })
     }
 }
 
