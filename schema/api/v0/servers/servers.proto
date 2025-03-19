@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package harm.servers.v0;
+
+message ServerA2SConfig {
+  string address = 1;
+  int32 port = 2;
+}
+
+enum RconPermission {
+  ADMIN = 0;
+  MONITOR = 1;
+}
+
+message ServerRconConfig {
+  string address = 1;
+  int32 port = 2;
+  string password = 3;
+  int32 max_clients = 4;
+  RconPermission permission = 5;
+  repeated string blacklist = 6;
+  repeated string whitelist = 7;
+}
+
+enum GamePlatform {
+  PC = 0;
+  XBL = 1;
+  PSN = 2;
+}
+
+message ServerGameProperties {
+  int32 server_max_view_distance = 1;
+  int32 server_min_grass_distance = 2;
+  bool fast_validation = 3;
+  int32 network_view_distance = 4;
+  bool battleye = 5;
+  bool disable_third_person = 6;
+  bool von_disable_ui = 7;
+  bool von_disable_direct_speech_ui = 8;
+  bool von_can_transmit_cross_faction = 9;
+  map<string, string> mission_header = 10;
+}
+
+message ServerMod {
+  string id = 1;
+  string name = 2;
+  bool required = 3;
+}
+
+message ServerGameConfig {
+  string name = 1;
+  optional string password = 2;
+  string password_admin = 3;
+  repeated string admins = 4;
+  string scenario_id = 5;
+  int32 max_players = 6;
+  bool visible = 7;
+  bool cross_platform = 8;
+  repeated GamePlatform supported_platforms = 9;
+  ServerGameProperties game_properties = 10;
+  bool mods_required_by_default = 11;
+  repeated ServerMod mods = 12;
+}
+
+message ServerJoinQueueConfig {
+  int32 max_size = 1;
+}
+
+message ServerOperatingConfig {
+  bool lobby_player_synchronise = 1;
+  bool disable_crash_reporter = 2;
+  repeated string disable_navmesh_streaming = 3;
+  bool disable_server_shutdown = 4;
+  bool disable_ai = 5;
+  int32 player_save_time = 6;
+  int32 ai_limit = 7;
+  int32 slot_reservation_timeout = 8;
+  ServerJoinQueueConfig join_queue = 9;
+}
+
+message ServerConfig {
+  string bind_address = 1;
+  optional int32 bind_port = 2;
+  optional string public_address = 3;
+  int32 public_port = 4;
+  ServerA2SConfig a2s = 5;
+  ServerRconConfig rcon = 6;
+  ServerGameConfig game = 7;
+  ServerOperatingConfig operating = 8;
+}
+
+message ServerMetadata {
+  string name = 1;
+  string namespace = 2;
+  map<string, string> labels = 3;
+}
+
+enum ServerState {
+  INITIALIZING = 0;
+  RUNNING = 1;
+  STOPPED = 2;
+  TERMINATING = 3;
+  ERROR = 4;
+}
+
+message ServerStatus {
+  ServerState state = 1;
+}
+
+message Server {
+  ServerMetadata metadata = 1;
+  ServerConfig config = 2;
+  ServerStatus status = 3;
+}

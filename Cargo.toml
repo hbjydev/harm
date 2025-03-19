@@ -1,3 +1,3 @@
 [workspace]
-members = ["pm", "schemas", "config", "control_plane"]
+members = ["config", "controller", "schema"]
 resolver = "2"

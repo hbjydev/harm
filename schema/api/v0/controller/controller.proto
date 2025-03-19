@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package harm.controller.v0;
+
+service ControllerService {
+  
+}

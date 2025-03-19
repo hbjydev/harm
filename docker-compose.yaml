@@ -1,0 +1,13 @@
+---
+volumes:
+  controller_data: {}
+
+services:
+  controller_data:
+    image: postgres:17
+    restart: unless-stopped
+    shm_size: 128mb
+    volumes:
+      - controller_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: harm

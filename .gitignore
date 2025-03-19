@@ -1,3 +1,4 @@
 /target
 /dist
-/db.sqlite
+/dev/harm.db
+/dev/key
